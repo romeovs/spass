@@ -108,13 +108,15 @@ func(s *SecretFile) Password() (string, error) {
 
 // Set password
 func(s *SecretFile) SetPassword(password string) error {
-	body, err := s.Body()
-	if err != nil {
-		return err
+	body := ""
+	if _, err := os.Stat(s.filename); err == nil {
+		body, err = s.Body()
+		if err != nil {
+			return err
+		}
 	}
 
 	lines := strings.SplitN(body, "\n", 2)
-	fmt.Println(lines)
 
 	lines[0] = password
 	body = strings.Join(lines, "\n")
