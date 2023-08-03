@@ -19,7 +19,6 @@ import (
 )
 
 func main() {
-	// search [query]
 	// copy [name]
 	// copy [name] [key]
 	// completions
@@ -431,6 +430,47 @@ func main() {
 					}
 
 					return nil
+				},
+			},
+			{
+				Name: "search",
+				ArgsUsage: "[query]",
+				Usage: "get an one time password from the specified secret",
+				Flags: []cli.Flag{},
+				Action: func(cli *cli.Context) error {
+					arg := cli.Args().Get(0)
+
+					parts := strings.Split(arg, ":")
+					key := parts[0]
+					val := parts[1]
+
+					secrets, err := store.List(ctx, "")
+					if err != nil {
+						return err
+					}
+
+					ok := false
+					for _, secret := range secrets {
+						pairs, err := secret.Pairs()
+						if err != nil {
+							return err
+						}
+
+						for _, pair := range pairs {
+							if strings.ToLower(key) == strings.ToLower(pair.Key){
+								if strings.Contains(strings.ToLower(pair.Value), strings.ToLower(val)) {
+									ok = true
+									fmt.Printf("match found in secret '%s':\n", secret.FullName())
+									fmt.Printf("%s: %s\n", pair.Key, pair.Value)
+								}
+							}
+						}
+					}
+					if ok {
+						return nil
+					} else {
+						return fmt.Errorf("no match found")
+					}
 				},
 			},
 		},

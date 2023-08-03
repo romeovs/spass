@@ -190,6 +190,12 @@ func (s *SecretFile) Pairs() ([]*Pair, error) {
 
 func parse(line string) *Pair {
 	parts := strings.SplitN(line, ": ", 2)
+	if len(parts) <= 1 {
+		return &Pair{
+			Value: line,
+		}
+	}
+
 	key := parts[0]
 	value := parts[1]
 
