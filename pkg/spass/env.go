@@ -23,9 +23,9 @@ func ReadEnv() *Env {
 		editor = env
 	}
 
-	pnwd := ""
+	pwnd := ""
 	if env := os.Getenv("HAVEIBEENPWND_API_KEY"); env != "" {
-		editor = env
+		pwnd = env
 	}
 
 	return &Env {

@@ -103,6 +103,10 @@ func(s *SecretFile) Password() (string, error) {
 		return "", fmt.Errorf("no password set for secret '%s'", s.FullName())
 	}
 
+	if strings.HasPrefix(pass, "otpauth://totp/") {
+		return "", fmt.Errorf("no password set for secret '%s'", s.FullName())
+	}
+
 	return pass, nil
 }
 

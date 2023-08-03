@@ -13,6 +13,7 @@ import (
 	"github.com/romeovs/spass/pkg/spass"
 	"github.com/romeovs/spass/pkg/editor"
 	"github.com/romeovs/spass/pkg/generate"
+	"github.com/romeovs/spass/pkg/pwnd"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -21,7 +22,6 @@ func main() {
 	// search [query]
 	// copy [name]
 	// copy [name] [key]
-	// pwnd [namespace]
 	// completions
 
 	env := spass.ReadEnv()
@@ -389,6 +389,46 @@ func main() {
 					left = period - elapsed
 
 					fmt.Printf("%s     valid for another %ds\n", code, left)
+
+					return nil
+				},
+			},
+			{
+				Name: "pwnd",
+				ArgsUsage: "[name]",
+				Usage: "check if the password in the specified secret was pwnd",
+				Flags: []cli.Flag{},
+				Action: func(cli *cli.Context) error {
+					name := cli.Args().Get(0)
+					if name == "" {
+						return errors.New("no name provided")
+					}
+
+					secret, err := store.Secret(ctx, name)
+					if err != nil {
+						return err
+					}
+
+					if secret == nil {
+						return errors.New("unreachable")
+					}
+
+					password, err := secret.Password()
+					if err != nil {
+						return err
+					}
+
+					client := pwnd.NewClient(env.HAVEIBEENPWND_API_KEY)
+					ispwnd, err := client.Check(password)
+					if err != nil {
+						return err
+					}
+
+					if ispwnd {
+						fmt.Println("this password has been pwnd, generate a new one")
+					} else {
+						fmt.Println("this password has not been pwnd!")
+					}
 
 					return nil
 				},
