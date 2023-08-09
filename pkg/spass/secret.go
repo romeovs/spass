@@ -11,7 +11,7 @@ import (
 
 // SecretFile implements Secret
 type SecretFile struct {
-	env *Env
+	env      *Env
 	filename string
 }
 
@@ -21,17 +21,17 @@ func strip(filename string) string {
 }
 
 // Name gets the name of secret
-func(s *SecretFile) FullName() string {
-	return strings.TrimPrefix(strip(s.filename), s.env.PASSWORD_STORE_DIR + "/")
+func (s *SecretFile) FullName() string {
+	return strings.TrimPrefix(strip(s.filename), s.env.PASSWORD_STORE_DIR+"/")
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Name() string {
+func (s *SecretFile) Name() string {
 	return filepath.Base(s.FullName())
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Namespace() string {
+func (s *SecretFile) Namespace() string {
 	dir := filepath.Dir(s.FullName())
 	if dir == "." {
 		return ""
@@ -39,18 +39,18 @@ func(s *SecretFile) Namespace() string {
 	return dir
 }
 
-func(s *SecretFile) decrypt(ctx context.Context) ([]byte, error) {
+func (s *SecretFile) decrypt(ctx context.Context) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, "gpg", "--decrypt", s.filename)
 	return cmd.Output()
 }
 
-func(s *SecretFile) encrypt(ctx context.Context, keyid string, content string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, "gpg", "--recipient", keyid,"--encrypt")
+func (s *SecretFile) encrypt(ctx context.Context, keyid string, content string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, "gpg", "--recipient", keyid, "--encrypt")
 	cmd.Stdin = strings.NewReader(content)
 	return cmd.Output()
 }
 
-func(s *SecretFile) keyid() (string, error) {
+func (s *SecretFile) keyid() (string, error) {
 	dir := filepath.Dir(s.filename)
 	idFile := filepath.Join(dir, ".gpg-id")
 	buf, err := os.ReadFile(idFile)
@@ -61,8 +61,8 @@ func(s *SecretFile) keyid() (string, error) {
 	return strings.TrimRight(string(buf), "\n"), nil
 }
 
-func(s *SecretFile) Write(ctx context.Context, content string) (error) {
-	keyid, err  := s.keyid()
+func (s *SecretFile) Write(ctx context.Context, content string) error {
+	keyid, err := s.keyid()
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func(s *SecretFile) Write(ctx context.Context, content string) (error) {
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Body(ctx context.Context) (string, error) {
+func (s *SecretFile) Body(ctx context.Context) (string, error) {
 	buf, err := s.decrypt(ctx)
 	if err != nil {
 		return "", err
@@ -91,7 +91,7 @@ func(s *SecretFile) Body(ctx context.Context) (string, error) {
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Password(ctx context.Context) (string, error) {
+func (s *SecretFile) Password(ctx context.Context) (string, error) {
 	body, err := s.Body(ctx)
 	if err != nil {
 		return "", nil
@@ -112,7 +112,7 @@ func(s *SecretFile) Password(ctx context.Context) (string, error) {
 }
 
 // Set password
-func(s *SecretFile) SetPassword(ctx context.Context, password string) error {
+func (s *SecretFile) SetPassword(ctx context.Context, password string) error {
 	body := ""
 	if _, err := os.Stat(s.filename); err == nil {
 		body, err = s.Body(ctx)
@@ -145,7 +145,7 @@ func (s *SecretFile) Remove() error {
 
 	size := info.Size()
 	zeroes := make([]byte, size)
-	copy(zeroes[:] , "0")
+	copy(zeroes[:], "0")
 	n, err := f.Write(zeroes)
 	if err != nil {
 		fmt.Println(err)
@@ -206,7 +206,7 @@ func parse(line string) *Pair {
 	}
 
 	return &Pair{
-		Key: key,
+		Key:   key,
 		Value: value,
 	}
 }

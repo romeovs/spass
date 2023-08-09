@@ -7,14 +7,14 @@ import (
 
 type Generator struct {
 	LowerCase bool
-	NoDigits bool
+	NoDigits  bool
 	NoSymbols bool
 }
 
 const (
-	lower = "abcdefghijklmnopqrstuvwxyz"
-	upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	digit = "0123456789"
+	lower  = "abcdefghijklmnopqrstuvwxyz"
+	upper  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	digit  = "0123456789"
 	symbol = "~!@#$%^&*()_+`-={}|[]\\:\"<>?,./"
 )
 

@@ -7,8 +7,8 @@ import (
 )
 
 type Env struct {
-	PASSWORD_STORE_DIR string
-	EDITOR string
+	PASSWORD_STORE_DIR    string
+	EDITOR                string
 	HAVEIBEENPWND_API_KEY string
 }
 
@@ -28,9 +28,9 @@ func ReadEnv() *Env {
 		pwnd = env
 	}
 
-	return &Env {
-		PASSWORD_STORE_DIR: dir,
-		EDITOR: editor,
+	return &Env{
+		PASSWORD_STORE_DIR:    dir,
+		EDITOR:                editor,
 		HAVEIBEENPWND_API_KEY: pwnd,
 	}
 }

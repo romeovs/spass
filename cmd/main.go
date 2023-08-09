@@ -2,21 +2,21 @@ package main
 
 import (
 	"context"
-	"os"
-	"log"
-	"fmt"
 	"errors"
+	"fmt"
+	"log"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/urfave/cli/v2"
-	"github.com/romeovs/spass/pkg/spass"
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/totp"
+	"github.com/romeovs/spass/pkg/clipboard"
 	"github.com/romeovs/spass/pkg/editor"
 	"github.com/romeovs/spass/pkg/generate"
 	"github.com/romeovs/spass/pkg/pwnd"
-	"github.com/romeovs/spass/pkg/clipboard"
-	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/totp"
+	"github.com/romeovs/spass/pkg/spass"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -29,9 +29,9 @@ func main() {
 	ctx := context.Background()
 
 	app := &cli.App{
-		Name: "spass",
-		Usage: "a fun password manager, compatible with pass.",
-		Suggest: true,
+		Name:                   "spass",
+		Usage:                  "a fun password manager, compatible with pass.",
+		Suggest:                true,
 		UseShortOptionHandling: true,
 		ExitErrHandler: func(cli *cli.Context, err error) {
 			if err == nil {
@@ -44,7 +44,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
-				Name: "env",
+				Name:  "env",
 				Usage: "print the relevant environment variables or defaults",
 				Action: func(cli *cli.Context) error {
 					env.Print()
@@ -52,10 +52,10 @@ func main() {
 				},
 			},
 			{
-				Name: "list",
-				Aliases: []string{"ls"},
+				Name:      "list",
+				Aliases:   []string{"ls"},
 				ArgsUsage: "[namespace]",
-				Usage: "list the secrets in the password store",
+				Usage:     "list the secrets in the password store",
 				Action: func(cli *cli.Context) error {
 					namespace := cli.Args().Get(0)
 
@@ -67,19 +67,19 @@ func main() {
 					for _, secret := range secrets {
 						fmt.Println(secret.FullName())
 					}
-					
+
 					return nil
 				},
 			},
 			{
-				Name: "pass",
+				Name:      "pass",
 				ArgsUsage: "[name]",
 				Flags: []cli.Flag{
-					&cli.BoolFlag {
-						Name: "copy",
+					&cli.BoolFlag{
+						Name:    "copy",
 						Aliases: []string{"c"},
-						Usage: "copy value to the clipboard",
-						Value: false,
+						Usage:   "copy value to the clipboard",
+						Value:   false,
 					},
 				},
 				Usage: "show the password for the specified secret",
@@ -103,7 +103,7 @@ func main() {
 						return err
 					}
 
-					if (cli.Bool("copy")) {
+					if cli.Bool("copy") {
 						fmt.Println("password copied!")
 						clipboard.Write(pass)
 					} else {
@@ -113,10 +113,10 @@ func main() {
 				},
 			},
 			{
-				Name: "show",
+				Name:      "show",
 				ArgsUsage: "[name]",
-				Usage: "show all the info for the specified secret",
-				Flags: []cli.Flag{},
+				Usage:     "show all the info for the specified secret",
+				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
 					if name == "" {
@@ -142,33 +142,33 @@ func main() {
 				},
 			},
 			{
-				Name: "generate",
+				Name:      "generate",
 				ArgsUsage: "[name]",
-				Usage: "generate a new password and store as a secret under the provided name",
+				Usage:     "generate a new password and store as a secret under the provided name",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name: "lowercase",
+						Name:    "lowercase",
 						Aliases: []string{"l"},
-						Value: false,
-						Usage: "use only lowercase characters",
+						Value:   false,
+						Usage:   "use only lowercase characters",
 					},
 					&cli.BoolFlag{
-						Name: "no-numbers",
+						Name:    "no-numbers",
 						Aliases: []string{"n"},
-						Value: false,
-						Usage: "do not use numbers",
+						Value:   false,
+						Usage:   "do not use numbers",
 					},
 					&cli.BoolFlag{
-						Name: "no-symbols",
+						Name:    "no-symbols",
 						Aliases: []string{"s"},
-						Value: false,
-						Usage: "do not use symbols",
+						Value:   false,
+						Usage:   "do not use symbols",
 					},
 					&cli.BoolFlag{
-						Name: "overwrite",
+						Name:    "overwrite",
 						Aliases: []string{"o"},
-						Value: false,
-						Usage: "overwrite existing password if the secret already exists",
+						Value:   false,
+						Usage:   "overwrite existing password if the secret already exists",
 					},
 				},
 				Action: func(cli *cli.Context) error {
@@ -184,7 +184,7 @@ func main() {
 
 					generator := &generate.Generator{
 						LowerCase: cli.Bool("lowercase"),
-						NoDigits: cli.Bool("no-numbers"),
+						NoDigits:  cli.Bool("no-numbers"),
 						NoSymbols: cli.Bool("no-symbols"),
 					}
 
@@ -199,7 +199,6 @@ func main() {
 						return err
 					}
 
-
 					err = secret.SetPassword(ctx, password)
 					if err != nil {
 						return err
@@ -210,10 +209,10 @@ func main() {
 				},
 			},
 			{
-				Name: "edit",
+				Name:      "edit",
 				ArgsUsage: "[name]",
-				Usage: "edit the contents of the specified secret",
-				Flags: []cli.Flag{},
+				Usage:     "edit the contents of the specified secret",
+				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
 					if name == "" {
@@ -250,11 +249,11 @@ func main() {
 				},
 			},
 			{
-				Name: "remove",
-				Aliases: []string{"rm"},
+				Name:      "remove",
+				Aliases:   []string{"rm"},
 				ArgsUsage: "[name]",
-				Usage: "delete a secret in the store",
-				Flags: []cli.Flag{},
+				Usage:     "delete a secret in the store",
+				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
 					if name == "" {
@@ -274,13 +273,13 @@ func main() {
 				},
 			},
 			{
-				Name: "get",
+				Name:      "get",
 				ArgsUsage: "[name] [key]",
-				Usage: "get the value of the key in the specified secret",
+				Usage:     "get the value of the key in the specified secret",
 				Flags: []cli.Flag{
-					&cli.BoolFlag {
+					&cli.BoolFlag{
 						Name: "case-insensitive",
-						Aliases: []string {
+						Aliases: []string{
 							"i",
 						},
 						Value: false,
@@ -339,21 +338,21 @@ func main() {
 				},
 			},
 			{
-				Name: "otp",
+				Name:      "otp",
 				ArgsUsage: "[name]",
-				Usage: "get an one time password from the specified secret",
+				Usage:     "get an one time password from the specified secret",
 				Flags: []cli.Flag{
-					&cli.BoolFlag {
-						Name: "copy",
+					&cli.BoolFlag{
+						Name:    "copy",
 						Aliases: []string{"c"},
-						Usage: "copy value to the clipboard",
-						Value: false,
+						Usage:   "copy value to the clipboard",
+						Value:   false,
 					},
-					&cli.BoolFlag {
-						Name: "wait",
+					&cli.BoolFlag{
+						Name:    "wait",
 						Aliases: []string{"w"},
-						Usage: "wait for a new token if the current one is about to expire",
-						Value: false,
+						Usage:   "wait for a new token if the current one is about to expire",
+						Value:   false,
 					},
 				},
 				Action: func(cli *cli.Context) error {
@@ -402,7 +401,7 @@ func main() {
 
 					if cli.Bool("wait") && left < 3 {
 						fmt.Println("waiting for new token...")
-						time.Sleep(time.Duration(left + 1) * time.Second)
+						time.Sleep(time.Duration(left+1) * time.Second)
 					}
 
 					code, err := totp.GenerateCode(key.Secret(), time.Now())
@@ -428,10 +427,10 @@ func main() {
 				},
 			},
 			{
-				Name: "pwnd",
+				Name:      "pwnd",
 				ArgsUsage: "[name]",
-				Usage: "check if the password in the specified secret was pwnd",
-				Flags: []cli.Flag{},
+				Usage:     "check if the password in the specified secret was pwnd",
+				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
 					if name == "" {
@@ -468,10 +467,10 @@ func main() {
 				},
 			},
 			{
-				Name: "search",
+				Name:      "search",
 				ArgsUsage: "[query]",
-				Usage: "get an one time password from the specified secret",
-				Flags: []cli.Flag{},
+				Usage:     "get an one time password from the specified secret",
+				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					arg := cli.Args().Get(0)
 
@@ -492,7 +491,7 @@ func main() {
 						}
 
 						for _, pair := range pairs {
-							if strings.ToLower(key) == strings.ToLower(pair.Key){
+							if strings.ToLower(key) == strings.ToLower(pair.Key) {
 								if strings.Contains(strings.ToLower(pair.Value), strings.ToLower(val)) {
 									ok = true
 									fmt.Printf("match found in secret '%s':\n", secret.FullName())

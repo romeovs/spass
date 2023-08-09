@@ -2,10 +2,10 @@ package spass
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"fmt"
 )
 
 // FileStore implements Store
@@ -29,7 +29,7 @@ func (s *FileStore) List(ctx context.Context, namespace string) ([]*SecretFile, 
 			return err
 		}
 
-		if info.IsDir(){
+		if info.IsDir() {
 			return nil
 		}
 
@@ -38,7 +38,7 @@ func (s *FileStore) List(ctx context.Context, namespace string) ([]*SecretFile, 
 		}
 
 		res = append(res, &SecretFile{
-			env: s.env,
+			env:      s.env,
 			filename: pth,
 		})
 
@@ -51,7 +51,6 @@ func (s *FileStore) List(ctx context.Context, namespace string) ([]*SecretFile, 
 
 	return res, nil
 }
-
 
 // Get a secret by name.
 func (s *FileStore) Secret(ctx context.Context, name string) (*SecretFile, error) {
@@ -73,8 +72,8 @@ func (s *FileStore) Secret(ctx context.Context, name string) (*SecretFile, error
 		return nil, notfound
 	}
 
-	secret := &SecretFile {
-		env: s.env,
+	secret := &SecretFile{
+		env:      s.env,
 		filename: filename,
 	}
 
@@ -87,8 +86,8 @@ func (s *FileStore) NewSecret(ctx context.Context, name string) (*SecretFile, er
 
 	// TODO: check if file exists?
 
-	secret := &SecretFile {
-		env: s.env,
+	secret := &SecretFile{
+		env:      s.env,
 		filename: filename,
 	}
 
