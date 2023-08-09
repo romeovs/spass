@@ -274,12 +274,10 @@ func main() {
 				Usage:     "get the value of the key in the specified secret",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name: "case-insensitive",
-						Aliases: []string{
-							"i",
-						},
-						Value: false,
-						Usage: "make the key match case insensitive",
+						Name:    "case-insensitive",
+						Aliases: []string{"i"},
+						Value:   false,
+						Usage:   "make the key match case insensitive",
 					},
 				},
 				Action: func(cli *cli.Context) error {
