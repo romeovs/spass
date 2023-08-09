@@ -14,6 +14,7 @@ import (
 	"github.com/romeovs/spass/pkg/editor"
 	"github.com/romeovs/spass/pkg/generate"
 	"github.com/romeovs/spass/pkg/pwnd"
+	"github.com/romeovs/spass/pkg/clipboard"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -71,6 +72,14 @@ func main() {
 			{
 				Name: "pass",
 				ArgsUsage: "[name]",
+				Flags: []cli.Flag{
+					&cli.BoolFlag {
+						Name: "copy",
+						Aliases: []string{"c"},
+						Usage: "copy value to the clipboard",
+						Value: false,
+					},
+				},
 				Usage: "show the password for the specified secret",
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
@@ -92,7 +101,12 @@ func main() {
 						return err
 					}
 
-					fmt.Println(pass)
+					if (cli.Bool("copy")) {
+						fmt.Println("password copied!")
+						clipboard.Write(pass)
+					} else {
+						fmt.Println(pass)
+					}
 					return nil
 				},
 			},
@@ -326,7 +340,14 @@ func main() {
 				Name: "otp",
 				ArgsUsage: "[name]",
 				Usage: "get an one time password from the specified secret",
-				Flags: []cli.Flag{},
+				Flags: []cli.Flag{
+					&cli.BoolFlag {
+						Name: "copy",
+						Aliases: []string{"c"},
+						Usage: "copy value to the clipboard",
+						Value: false,
+					},
+				},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
 					if name == "" {
@@ -372,6 +393,7 @@ func main() {
 					left := period - elapsed
 
 					if left < 3 {
+						fmt.Println("waiting for new token...")
 						time.Sleep(time.Duration(left + 1) * time.Second)
 					}
 
@@ -387,7 +409,12 @@ func main() {
 					elapsed = epoch % period
 					left = period - elapsed
 
-					fmt.Printf("%s     valid for another %ds\n", code, left)
+					fmt.Printf("%-10s valid for another %ds\n", code, left)
+
+					if cli.Bool("copy") {
+						clipboard.Write(code)
+						fmt.Printf("%10s copied to clipboard!\n", " ")
+					}
 
 					return nil
 				},
