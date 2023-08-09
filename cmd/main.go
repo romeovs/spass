@@ -318,7 +318,7 @@ func main() {
 					ok := false
 					for _, pair := range pairs {
 						if caseInsensitive {
-							if strings.ToLower(pair.Key) == strings.ToLower(key) {
+							if strings.EqualFold(pair.Key, key) {
 								ok = true
 								fmt.Println(pair.Value)
 							}
