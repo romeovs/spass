@@ -347,6 +347,12 @@ func main() {
 						Usage: "copy value to the clipboard",
 						Value: false,
 					},
+					&cli.BoolFlag {
+						Name: "wait",
+						Aliases: []string{"w"},
+						Usage: "wait for a new token if the current one is about to expire",
+						Value: false,
+					},
 				},
 				Action: func(cli *cli.Context) error {
 					name := cli.Args().Get(0)
@@ -392,7 +398,7 @@ func main() {
 					elapsed := epoch % period
 					left := period - elapsed
 
-					if left < 3 {
+					if cli.Bool("wait") && left < 3 {
 						fmt.Println("waiting for new token...")
 						time.Sleep(time.Duration(left + 1) * time.Second)
 					}
