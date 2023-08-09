@@ -20,19 +20,19 @@ type Secret interface {
 	Fullname() string
 
 	// Get the password in the secret
-	Password() (string, error)
+	Password(ctx context.Context) (string, error)
 
 	// The full body of the secret
-	Body() (string, error)
+	Body(ctx context.Context) (string, error)
 
 	// SetPassword sets the password of the secret
-	SetPassword(string) error
+	SetPassword(ctx context.Context, pass string) error
 
 	// All the value, except for the secret
-	Pairs() ([]*Pair, error)
+	Pairs(ctx context.Context) ([]*Pair, error)
 
 	// Remove the secret
-	Remove() error
+	Remove(ctx context.Context) error
 }
 
 type Store interface {

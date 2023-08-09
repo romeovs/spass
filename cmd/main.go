@@ -87,7 +87,7 @@ func main() {
 						return errors.New("no secret found")
 					}
 
-					pass, err := secret.Password()
+					pass, err := secret.Password(ctx)
 					if err != nil {
 						return err
 					}
@@ -116,7 +116,7 @@ func main() {
 						return errors.New("unreachable")
 					}
 
-					body, err := secret.Body()
+					body, err := secret.Body(ctx)
 					if err != nil {
 						return err
 					}
@@ -184,7 +184,7 @@ func main() {
 					}
 
 
-					err = secret.SetPassword(password)
+					err = secret.SetPassword(ctx, password)
 					if err != nil {
 						return err
 					}
@@ -213,7 +213,7 @@ func main() {
 						return errors.New("unreachable")
 					}
 
-					body, err := secret.Body()
+					body, err := secret.Body(ctx)
 					if err != nil {
 						return err
 					}
@@ -223,7 +223,7 @@ func main() {
 						return err
 					}
 
-					err = secret.Write(string(b))
+					err = secret.Write(ctx, string(b))
 					if err != nil {
 						return err
 					}
@@ -293,7 +293,7 @@ func main() {
 						return errors.New("unreachable")
 					}
 
-					pairs, err := secret.Pairs()
+					pairs, err := secret.Pairs(ctx)
 					if err != nil {
 						return err
 					}
@@ -342,7 +342,7 @@ func main() {
 						return errors.New("unreachable")
 					}
 
-					body, err := secret.Body()
+					body, err := secret.Body(ctx)
 					if err != nil {
 						return err
 					}
@@ -412,7 +412,7 @@ func main() {
 						return errors.New("unreachable")
 					}
 
-					password, err := secret.Password()
+					password, err := secret.Password(ctx)
 					if err != nil {
 						return err
 					}
@@ -451,7 +451,7 @@ func main() {
 
 					ok := false
 					for _, secret := range secrets {
-						pairs, err := secret.Pairs()
+						pairs, err := secret.Pairs(ctx)
 						if err != nil {
 							return err
 						}

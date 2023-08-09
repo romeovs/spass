@@ -1,6 +1,7 @@
 package spass
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -38,13 +39,13 @@ func(s *SecretFile) Namespace() string {
 	return dir
 }
 
-func(s *SecretFile) decrypt() ([]byte, error) {
-	cmd := exec.Command("gpg", "--decrypt", s.filename)
+func(s *SecretFile) decrypt(ctx context.Context) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, "gpg", "--decrypt", s.filename)
 	return cmd.Output()
 }
 
-func(s *SecretFile) encrypt(keyid string, content string) ([]byte, error) {
-	cmd := exec.Command("gpg", "--recipient", keyid,"--encrypt")
+func(s *SecretFile) encrypt(ctx context.Context, keyid string, content string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, "gpg", "--recipient", keyid,"--encrypt")
 	cmd.Stdin = strings.NewReader(content)
 	return cmd.Output()
 }
@@ -60,13 +61,13 @@ func(s *SecretFile) keyid() (string, error) {
 	return strings.TrimRight(string(buf), "\n"), nil
 }
 
-func(s *SecretFile) Write(content string) (error) {
+func(s *SecretFile) Write(ctx context.Context, content string) (error) {
 	keyid, err  := s.keyid()
 	if err != nil {
 		return err
 	}
 
-	buf, err := s.encrypt(keyid, content)
+	buf, err := s.encrypt(ctx, keyid, content)
 	if err != nil {
 		return err
 	}
@@ -80,8 +81,8 @@ func(s *SecretFile) Write(content string) (error) {
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Body() (string, error) {
-	buf, err := s.decrypt()
+func(s *SecretFile) Body(ctx context.Context) (string, error) {
+	buf, err := s.decrypt(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -90,8 +91,8 @@ func(s *SecretFile) Body() (string, error) {
 }
 
 // Name gets the name of secret
-func(s *SecretFile) Password() (string, error) {
-	body, err := s.Body()
+func(s *SecretFile) Password(ctx context.Context) (string, error) {
+	body, err := s.Body(ctx)
 	if err != nil {
 		return "", nil
 	}
@@ -111,10 +112,10 @@ func(s *SecretFile) Password() (string, error) {
 }
 
 // Set password
-func(s *SecretFile) SetPassword(password string) error {
+func(s *SecretFile) SetPassword(ctx context.Context, password string) error {
 	body := ""
 	if _, err := os.Stat(s.filename); err == nil {
-		body, err = s.Body()
+		body, err = s.Body(ctx)
 		if err != nil {
 			return err
 		}
@@ -125,7 +126,7 @@ func(s *SecretFile) SetPassword(password string) error {
 	lines[0] = password
 	body = strings.Join(lines, "\n")
 
-	return s.Write(body)
+	return s.Write(ctx, body)
 }
 
 // Remove wipes and removes the secret
@@ -166,8 +167,8 @@ func (s *SecretFile) Remove() error {
 }
 
 // Pairs gets the pairs in the secret file
-func (s *SecretFile) Pairs() ([]*Pair, error) {
-	body, err := s.Body()
+func (s *SecretFile) Pairs(ctx context.Context) ([]*Pair, error) {
+	body, err := s.Body(ctx)
 	if err != nil {
 		return nil, err
 	}
