@@ -32,6 +32,7 @@ func main() {
 		Name: "spass",
 		Usage: "a fun password manager, compatible with pass.",
 		Suggest: true,
+		UseShortOptionHandling: true,
 		ExitErrHandler: func(cli *cli.Context, err error) {
 			if err == nil {
 				os.Exit(0)
