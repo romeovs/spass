@@ -20,10 +20,6 @@ import (
 )
 
 func main() {
-	// copy [name]
-	// copy [name] [key]
-	// completions
-
 	env := spass.ReadEnv()
 	store := spass.NewFileStore(env)
 	ctx := context.Background()
