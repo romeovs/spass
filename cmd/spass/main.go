@@ -463,7 +463,7 @@ func main() {
 			{
 				Name:      "search",
 				ArgsUsage: "[query]",
-				Usage:     "get an one time password from the specified secret",
+				Usage:     "search for a secret containg the query",
 				Flags:     []cli.Flag{},
 				Action: func(cli *cli.Context) error {
 					arg := cli.Args().Get(0)
