@@ -49,7 +49,7 @@ COMMANDS:
    get         get the value of the key in the specified secret
    otp         get an one time password from the specified secret
    pwnd        check if the password in the specified secret was pwnd
-   search      get an one time password from the specified secret
+   search      search for a secret containg the query
    help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
