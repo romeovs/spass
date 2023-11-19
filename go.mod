@@ -1,6 +1,6 @@
 module github.com/romeovs/spass
 
-go 1.20
+go 1.21
 
 require (
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
