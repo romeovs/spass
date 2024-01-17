@@ -1,0 +1,9 @@
+- Add multiple sources?
+    - icloud keychain?
+        - https://github.com/keybase/go-keychain
+    - firefox keychain?
+        - https://github.com/unode/firefox_decrypt/blob/main/firefox_decrypt.py
+        - https://pkg.go.dev/github.com/rusq/gonss3
+    - sync between sources
+- Allow re-encrypting secrets with new gpg key
+- Integrate with haveibeenpwned
