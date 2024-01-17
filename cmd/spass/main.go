@@ -105,6 +105,56 @@ func main() {
 					} else {
 						fmt.Println(pass)
 					}
+
+					// Show otp if found
+					body, err := secret.Body(ctx)
+					if err != nil {
+						return err
+					}
+
+					lines := strings.Split(body, "\n")
+					otpauth := ""
+					for _, line := range lines {
+						if strings.HasPrefix(line, "otpauth://totp") {
+							otpauth = line
+						}
+					}
+
+					if otpauth == "" {
+						return nil
+					}
+
+					key, err := otp.NewKeyFromURL(otpauth)
+					if err != nil {
+						return fmt.Errorf("invalid otp set up in secret '%s'", secret.FullName())
+					}
+
+					now := time.Now()
+					epoch := now.Unix()
+					period := int64(key.Period())
+
+					elapsed := epoch % period
+					left := period - elapsed
+
+					if cli.Bool("wait") && left < 3 {
+						fmt.Println("waiting for new token...")
+						time.Sleep(time.Duration(left+1) * time.Second)
+					}
+
+					code, err := totp.GenerateCode(key.Secret(), time.Now())
+					if err != nil {
+						return fmt.Errorf("failed to generate code: %v", err)
+					}
+
+					now = time.Now()
+					epoch = now.Unix()
+					period = int64(key.Period())
+
+					elapsed = epoch % period
+					left = period - elapsed
+
+					fmt.Printf("%-10s valid for another %ds\n", code, left)
+
 					return nil
 				},
 			},
