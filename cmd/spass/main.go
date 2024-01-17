@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kbinani/screenshot"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/mdp/qrterminal/v3"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
@@ -234,6 +237,104 @@ func main() {
 						// HalfBlocks: true,
 						WithSixel: true,
 					})
+
+					return nil
+				},
+			},
+			{
+				Name:      "scan",
+				ArgsUsage: "[name]",
+				Usage:     "scan the screen for a qr code and store it",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "overwrite",
+						Aliases: []string{"o"},
+						Value:   false,
+						Usage:   "overwrite existing password if the secret already exists",
+					},
+				},
+				Action: func(cli *cli.Context) error {
+					overwrite := cli.Bool("overwrite")
+					name := cli.Args().Get(0)
+
+					bounds := screenshot.GetDisplayBounds(0)
+					img, err := screenshot.CaptureRect(bounds)
+					if err != nil {
+						return err
+					}
+
+					bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+					if err != nil {
+						return err
+					}
+
+					qrReader := qrcode.NewQRCodeReader()
+					result, err := qrReader.Decode(bmp, nil)
+					if err != nil {
+						return errors.New("No qr code found")
+					}
+
+					otpauth := result.String()
+
+					if !strings.HasPrefix(otpauth, "otpauth://totp/") {
+						return fmt.Errorf("invalid otp parsed from qr code")
+					}
+
+					key, err := otp.NewKeyFromURL(otpauth)
+					if err != nil {
+						return fmt.Errorf("invalid otp parsed from qr code")
+					}
+
+					fmt.Println("Issuer:", key.Issuer())
+					fmt.Println("Account:", key.AccountName())
+
+					secret, _ := store.Secret(ctx, name)
+					if err != nil {
+						return err
+					}
+
+					if secret == nil {
+						secret, err = store.NewSecret(ctx, name)
+						if err != nil {
+							return err
+						}
+						err = secret.Write(ctx, "")
+						if err != nil {
+							return err
+						}
+					}
+
+					body, err := secret.Body(ctx)
+					if err != nil {
+						return err
+					}
+
+					lines := strings.Split(body, "\n")
+					res := make([]string, len(lines))
+					written := false
+					for _, line := range lines {
+						if strings.HasPrefix(line, "otpauth://totp") {
+							if overwrite {
+								written = true
+								res = append(res, otpauth)
+							} else {
+								return errors.New("An otp secret is already stored for this secret, overwrite with -overwrite")
+							}
+						} else {
+							res = append(res, line)
+						}
+					}
+
+					if !written {
+						res = append(res, otpauth)
+					}
+
+					err = secret.Write(ctx, strings.Join(res, "\n"))
+					if err != nil {
+						return err
+					}
+
+					fmt.Printf("secret '%s' saved!\n", secret.FullName())
 
 					return nil
 				},
