@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mdp/qrterminal/v3"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"github.com/romeovs/spass/pkg/clipboard"
@@ -184,6 +185,56 @@ func main() {
 					}
 
 					fmt.Printf("%s", body)
+					return nil
+				},
+			},
+			{
+				Name:      "qrcode",
+				ArgsUsage: "[name]",
+				Usage:     "show the otp qrcode",
+				Flags:     []cli.Flag{},
+				Action: func(cli *cli.Context) error {
+					name := cli.Args().Get(0)
+					if name == "" {
+						return errors.New("no name provided")
+					}
+
+					secret, err := store.Secret(ctx, name)
+					if err != nil {
+						return err
+					}
+
+					if secret == nil {
+						return errors.New("unreachable")
+					}
+
+					body, err := secret.Body(ctx)
+					if err != nil {
+						return err
+					}
+
+					lines := strings.Split(body, "\n")
+					otpauth := ""
+					for _, line := range lines {
+						if strings.HasPrefix(line, "otpauth://totp") {
+							otpauth = line
+						}
+					}
+
+					if otpauth == "" {
+						return fmt.Errorf("no otp set up in secret '%s'", secret.FullName())
+					}
+
+					qrterminal.GenerateWithConfig(otpauth, qrterminal.Config{
+						Level:     qrterminal.L,
+						Writer:    os.Stdout,
+						BlackChar: qrterminal.BLACK,
+						WhiteChar: qrterminal.WHITE,
+						QuietZone: 2,
+						// HalfBlocks: true,
+						WithSixel: true,
+					})
+
 					return nil
 				},
 			},
